@@ -1,0 +1,24 @@
+title: Dark mode toggle
+baseline: An icon button to switch between light and dark.
+description: Demo of the Dark mode toggle component theme for Cecil.
+baseurl: http://localhost:8000/
+theme:
+  - darkmodetoggle
+darkmodetoggle:
+  class: dark
+language: en
+languages:
+  - code: en
+    name: English
+    locale: en_US
+  - code: fr
+    name: Français
+    locale: fr_FR
+    config:
+      baseline: Un bouton icône pour basculer entre clair et sombre.
+      menus:
+        main:
+          - {id: github, name: GitHub, url: 'https://github.com/Cecilapp/theme-darkmodetoggle', weight: 10}
+menus:
+  main:
+    - {id: github, name: GitHub, url: 'https://github.com/Cecilapp/theme-darkmodetoggle', weight: 10}

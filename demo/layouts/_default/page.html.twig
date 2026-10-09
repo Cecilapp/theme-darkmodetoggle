@@ -1,0 +1,139 @@
+{#- Base layout of the demo: Pico CSS (bundled with Cecil), with the dark mode toggle in the header -#}
+<!DOCTYPE html>
+<html lang="{{ site.language }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{- include('partials/metatags.html.twig', {page: page, site: site}, with_context=false) ~}}
+    {#- as early as possible, to apply the color scheme before the first paint ~#}
+    {{ include('partials/darkmodetoggle-head.html.twig', {site}, with_context = false) }}
+    <style>{% apply minify_css ~%}
+      {{- include('partials/pico.css.twig') ~}}
+      @media (min-width: 1024px) {
+        body > header,
+        body > main,
+        body > footer {
+          max-width: 768px;
+        }
+      }
+      body > header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--pico-spacing);
+      }
+      body > header hgroup {
+        margin: 0;
+      }
+      .site-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--pico-h1-color);
+        text-decoration: none;
+      }
+      .header-tools {
+        display: flex;
+        align-items: center;
+        gap: var(--pico-spacing);
+      }
+      .header-tools nav ul {
+        margin: 0;
+      }
+      .darkmodetoggle {
+        --darkmodetoggle-color: var(--pico-muted-color);
+      }
+      /* a customized toggle, through the CSS custom properties */
+      .darkmodetoggle.big {
+        --darkmodetoggle-size: 4rem;
+        --darkmodetoggle-padding: 1.25rem;
+        --darkmodetoggle-radius: 50%;
+        --darkmodetoggle-color: var(--pico-primary-inverse);
+        --darkmodetoggle-background: var(--pico-primary-background);
+      }
+      .playground {
+        text-align: center;
+      }
+      .playground .big {
+        margin-bottom: var(--pico-spacing);
+      }
+      .playground [role="group"] {
+        max-width: 24rem;
+        margin: var(--pico-spacing) auto;
+      }
+      .playground output {
+        font-weight: 700;
+      }
+      .playground ol {
+        text-align: left;
+        max-height: 10rem;
+        overflow: auto;
+        font-family: var(--pico-font-family-monospace);
+        font-size: .875rem;
+      }
+    {% endapply %}</style>
+  </head>
+  <body>
+    <header>
+      <hgroup>
+        <a class="site-title" href="{{ url(site.home) }}">{{ site.title }}</a>
+        <p>{{ site.baseline }}</p>
+      </hgroup>
+      <div class="header-tools">
+        <nav>
+          <ul>
+          {%- for entry in site.menus.main|default([])|sort_by_weight %}
+            <li><a href="{{ url(entry.url) }}">{{ entry.name }}</a></li>
+          {%- endfor %}
+          </ul>
+        </nav>
+        {{ include('partials/darkmodetoggle.html.twig') }}
+      </div>
+    </header>
+    <main>
+      {%- block content ~%}
+      {{- page.content ~}}
+      {%- endblock content ~%}
+      {%- if page.playground|default(false) %}
+      <article class="playground">
+        {{ include('partials/darkmodetoggle.html.twig', {class: 'big'}) }}
+        <p>{% trans %}Current color scheme:{% endtrans %} <output id="scheme"></output></p>
+        <div role="group">
+          <button type="button" class="secondary" data-scheme="light">{{ 'Light'|trans }}</button>
+          <button type="button" class="secondary" data-scheme="dark">{{ 'Dark'|trans }}</button>
+        </div>
+        <details>
+          <summary>{% trans with {'%event%': '<code>colorschemechange</code>'} %}%event% events{% endtrans %}</summary>
+          <ol id="events"></ol>
+        </details>
+      </article>
+      <script>{% apply minify_js ~%}
+        (function () {
+          var output = document.getElementById('scheme');
+          var events = document.getElementById('events');
+          output.value = window.colorScheme.current();
+          document.querySelectorAll('[data-scheme]').forEach(function (button) {
+            button.addEventListener('click', function () {
+              window.colorScheme.set(button.dataset.scheme);
+            });
+          });
+          document.addEventListener('colorschemechange', function (event) {
+            output.value = event.detail.scheme;
+            var item = document.createElement('li');
+            item.textContent = new Date().toLocaleTimeString() + ' → ' + event.detail.scheme;
+            events.prepend(item);
+          });
+        })();
+      {% endapply %}</script>
+      {%- endif %}
+    </main>
+    <footer>
+      {%- set powered_by -%}
+      <a href="{{ cecil.url }}">Cecil</a> &amp; <a href="https://picocss.com">Pico CSS</a>
+      {%- endset ~%}
+      <small>
+        {%- if page.translations|default([])|length >= 1 %}{{ include('partials/languages.html.twig') }} · {% endif -%}
+        {% trans %}Powered by %powered_by%{% endtrans %}
+      </small>
+    </footer>
+  </body>
+</html>

@@ -2,6 +2,10 @@
 
 The _Dark mode toggle_ component theme for [Cecil](https://cecil.app) adds an icon button to switch a website between light and dark color schemes.
 
+![Screenshot of the demo website, in light and dark color schemes](docs/screenshot.png)
+
+**[Demo](https://cecilapp.github.io/theme-darkmodetoggle/)**
+
 ## Features
 
 - **Icon button**: a moon in light mode, a sun in dark mode
@@ -117,6 +121,17 @@ The button label and title are translatable (English and French included):
 "Dark mode": "Mode sombre"
 "Toggle dark mode": "Basculer le mode sombre"
 ```
+
+## Demo
+
+The [`demo`](demo/) directory contains a website using the theme (with [Pico CSS](https://picocss.com)). To run it locally:
+
+```bash
+php demo/link.php
+php cecil.phar serve demo
+```
+
+> `demo/link.php` links the repository as `demo/themes/darkmodetoggle`, so the demo uses the theme under development.
 
 ## License
 
