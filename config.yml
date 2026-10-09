@@ -1,0 +1,4 @@
+darkmodetoggle:
+  storage_key: theme # localStorage key of the user preference
+  class: dark        # class added to <html> in dark mode (empty to disable)
+  style: true        # minimal button style (false to style it yourself)

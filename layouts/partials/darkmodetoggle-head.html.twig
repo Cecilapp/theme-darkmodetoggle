@@ -1,0 +1,111 @@
+{#- Dark mode handling, to include in the `head`:
+1. resolves the stored preference (or the system one) and applies it before paint, to avoid a flash;
+2. exposes `window.colorScheme` (`current()`, `set()`, `toggle()`) and dispatches a `colorschemechange` event on `document`, so a site or a third party embed can follow the scheme of the page;
+3. binds the toggle buttons (`[data-darkmodetoggle]`), wherever and whenever they are added to the page. ~#}
+{%- set options = site.darkmodetoggle|default({}) ~%}
+{%- set key = options.storage_key|default('theme') ~%}
+{%- set class = options.class ?? 'dark' ~%}
+    <script>{% apply minify_js ~%}
+      (function () {
+        var KEY = {{ key|json_encode|raw }};
+        var CLASS = {{ class|json_encode|raw }};
+        var root = document.documentElement;
+        var media = window.matchMedia('(prefers-color-scheme: dark)');
+        function systemScheme() {
+          return media.matches ? 'dark' : 'light';
+        }
+        function storedScheme() {
+          try {
+            return localStorage.getItem(KEY);
+          } catch (e) {
+            return null; // storage unavailable (private mode, blocked cookies, etc.)
+          }
+        }
+        function currentScheme() {
+          return storedScheme() || systemScheme();
+        }
+        function sync() {
+          var isDark = currentScheme() === 'dark';
+          document.querySelectorAll('[data-darkmodetoggle]').forEach(function (button) {
+            button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+          });
+        }
+        function apply() {
+          var scheme = currentScheme();
+          if (CLASS) {
+            root.classList.toggle(CLASS, scheme === 'dark');
+          }
+          root.dataset.theme = scheme;
+          root.style.colorScheme = scheme;
+          sync();
+          document.dispatchEvent(new CustomEvent('colorschemechange', {detail: {scheme: scheme}}));
+        }
+        function set(scheme) {
+          try {
+            // only an explicit preference is stored, so the system one keeps the lead when both agree
+            if (scheme === systemScheme()) {
+              localStorage.removeItem(KEY);
+            } else {
+              localStorage.setItem(KEY, scheme);
+            }
+          } catch (e) {
+            // storage unavailable: the choice applies to this page only
+          }
+          apply();
+        }
+        function toggle() {
+          set(currentScheme() === 'dark' ? 'light' : 'dark');
+        }
+        // a stored preference that converges with the new system one is dropped
+        media.addEventListener('change', function () {
+          set(currentScheme());
+        });
+        // event delegation: buttons don't exist yet, as this script belongs to the `head`
+        document.addEventListener('click', function (event) {
+          if (event.target.closest && event.target.closest('[data-darkmodetoggle]')) {
+            toggle();
+          }
+        });
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', sync);
+        }
+        window.colorScheme = {
+          current: currentScheme,
+          set: set,
+          toggle: toggle,
+        };
+        apply();
+      })();
+    {% endapply %}</script>
+    <style>{% apply minify_css ~%}
+      {#- icons visibility, driven by the `data-theme` attribute so it's right before the first paint ~#}
+      :root:not([data-theme="dark"]) .darkmodetoggle-icon-light,
+      :root[data-theme="dark"] .darkmodetoggle-icon-dark {
+        display: none;
+      }
+      {%- if options.style ?? true %}
+      .darkmodetoggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--darkmodetoggle-padding, .25rem);
+        border: 0;
+        border-radius: var(--darkmodetoggle-radius, .375rem);
+        background: var(--darkmodetoggle-background, transparent);
+        color: var(--darkmodetoggle-color, currentColor);
+        line-height: 0;
+        cursor: pointer;
+      }
+      .darkmodetoggle:hover {
+        opacity: .8;
+      }
+      .darkmodetoggle:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+      .darkmodetoggle svg {
+        width: var(--darkmodetoggle-size, 1.5rem);
+        height: var(--darkmodetoggle-size, 1.5rem);
+      }
+      {%- endif %}
+    {% endapply %}</style>
