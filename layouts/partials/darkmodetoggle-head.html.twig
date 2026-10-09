@@ -84,26 +84,29 @@
         display: none;
       }
       {%- if options.style ?? true %}
-      .darkmodetoggle {
+      {#- attribute + class selector, to win over generic `button` / `[type=button]` styles of CSS frameworks ~#}
+      .darkmodetoggle[data-darkmodetoggle] {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        margin: 0;
         padding: var(--darkmodetoggle-padding, .25rem);
         border: 0;
         border-radius: var(--darkmodetoggle-radius, .375rem);
         background: var(--darkmodetoggle-background, transparent);
+        box-shadow: none;
         color: var(--darkmodetoggle-color, currentColor);
         line-height: 0;
         cursor: pointer;
       }
-      .darkmodetoggle:hover {
+      .darkmodetoggle[data-darkmodetoggle]:hover {
         opacity: .8;
       }
-      .darkmodetoggle:focus-visible {
+      .darkmodetoggle[data-darkmodetoggle]:focus-visible {
         outline: 2px solid currentColor;
         outline-offset: 2px;
       }
-      .darkmodetoggle svg {
+      .darkmodetoggle[data-darkmodetoggle] svg {
         width: var(--darkmodetoggle-size, 1.5rem);
         height: var(--darkmodetoggle-size, 1.5rem);
       }
